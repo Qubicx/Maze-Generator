@@ -10,7 +10,7 @@ function setup() {
 }
 
 function draw() {
-  cells.push(new Cell(mX * cellSize, mY * cellSize, shuffle([0, 1, 2, 3])));
+  cells.push(new Cell(mX * cellSize, mY * cellSize));
   direction = cells[cells.length - 1].dirOrder.shift();
 
   showAll();
@@ -22,6 +22,15 @@ function showAll() {
   for (let i = 0; i < cells.length; i++) {
     cells[i].show();
   }
+}
+
+function findCell(x, y) {
+  for (let i = 0; i < cells.length; i++) {
+    if (cells[i].x == x && cells[i].y == y) {
+      return i;
+    }
+  }
+  return null;
 }
 
 function cardinalTranslate(direction) {
@@ -45,11 +54,11 @@ function cardinalTranslate(direction) {
 }
 
 class Cell {
-  constructor(x_, y_, dirOrder_ = [0, 1, 2, 3], walls_ = [false, false, true, true]) {
+  constructor(x_, y_,  walls_ = [true, true, true, true], dirOrder_ = [0, 1, 2, 3]) {
     this.x = x_;
     this.y = y_;
     this.walls = walls_;
-    this.dirOrder = dirOrder_;
+    this.dirOrder = shuffle([0, 1, 2, 3]);
     this.firstDraw = true;
   }
   show() { //draw the cell
