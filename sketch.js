@@ -4,12 +4,27 @@ let mX = 10;
 let mY = 10;
 let mWidth;
 let mHeight;
-
-let dirOffset = {
-  N:{x:0,y:-1},
-  E:{x:1,y:0},
-  S:{x:0,y:1},
-  W:{x:-1,y:0}
+let dir = {
+  N: {
+    id: 0,
+    x: 0,
+    y: -1
+  },
+  E: {
+    id: 1,
+    x: 1,
+    y: 0
+  },
+  S: {
+    id: 2,
+    x: 0,
+    y: 1
+  },
+  W: {
+    id: 3,
+    x: -1,
+    y: 0
+  }
 }
 
 function setup() {
@@ -18,21 +33,31 @@ function setup() {
   mHeight = height / cellSize;
   background(220);
   frameRate(1);
+  cells.push(new Cell(mX, mY));
+  showAll();
 }
 
 function draw() {
-  cells.push(new Cell(mX, mY));
-  cells[cells.length - 1].pruneDirections();
+  let pmX = mX;
+  let pmY = mY;
   direction = cells[cells.length - 1].directions.shift();
-  showAll();
   mX += direction.x;
   mY += direction.y;
+  cells.push(new Cell(mX, mY));
+  cells[cells.length - 1].walls[(direction.id + 6) % 4] = false;
+  cells[cells.length - 1].pruneDirections();
+  previousCell = findCell(pmX,pmY);
+  cells[previousCell].walls[(direction.id)] = false;
+  showAll();
 }
 
 function showAll() {
   background(220);
   for (let i = 0; i < cells.length; i++) {
     cells[i].show();
+    textAlign(LEFT,TOP)
+    textSize(5)
+    text(str(i), cells[i].x * cellSize +1, cells[i].y * cellSize+1)
   }
 }
 
@@ -45,16 +70,16 @@ function findCell(x, y) {
   return null;
 }
 
-function outOfBounds(x,y) { //return if a given maze x or y is out of bounds
+function outOfBounds(x, y) { //return if a given maze x or y is out of bounds
   return (x < 0 || y < 0 || x > mWidth || y > mHeight);
 }
 
 class Cell {
-  constructor(x_, y_,  walls_ = [true, true, true, true]) {
+  constructor(x_, y_, walls_ = [true, true, true, true]) {
     this.x = x_;
     this.y = y_;
     this.walls = walls_;
-    this.directions = shuffle([dirOffset.N, dirOffset.E, dirOffset.S, dirOffset.W]);
+    this.directions = shuffle([dir.N, dir.E, dir.S, dir.W]);
     this.firstDraw = true;
   }
   show() { //draw the cell
@@ -84,14 +109,14 @@ class Cell {
       line(this.cX, this.cY, this.cX, this.cY + cellSize);
     }
   }
-  pruneDirections() {
-    for (let i = this.directions.length - 1 ; i >= 0; i--) {
+  pruneDirections() { //remove any directions that a cell cannot go
+    for (let i = this.directions.length - 1; i >= 0; i--) {
       console.log(this.directions[i], i);
       let checkX = this.x + this.directions[i].x;
       let checkY = this.y + this.directions[i].y;
-      console.log(checkX,checkY,findCell(checkX,checkY));
-      if (findCell(checkX,checkY) != null || outOfBounds(checkX,checkY)) {
-        this.directions.splice(i,1);
+      console.log(checkX, checkY, findCell(checkX, checkY));
+      if (findCell(checkX, checkY) != null || outOfBounds(checkX, checkY)) {
+        this.directions.splice(i, 1);
       }
     }
   }
