@@ -5,6 +5,13 @@ let mY = 10;
 let mWidth;
 let mHeight;
 
+let dirOffset = {
+  N:{x:0,y:-1},
+  E:{x:1,y:0},
+  S:{x:0,y:1},
+  W:{x:-1,y:0}
+}
+
 function setup() {
   createCanvas(400, 400);
   mWidth = width / cellSize;
@@ -18,8 +25,8 @@ function draw() {
   cells[cells.length - 1].pruneDirections();
   direction = cells[cells.length - 1].directions.shift();
   showAll();
-  mX += getOffset(direction)[0];
-  mY += getOffset(direction)[1];
+  mX += direction.x;
+  mY += direction.y;
 }
 
 function showAll() {
@@ -38,23 +45,6 @@ function findCell(x, y) {
   return null;
 }
 
-function getOffset(direction) { //get x & y offsets for a given direction
-  switch (direction) {
-    case 0: //north
-      return [0, -1];
-      break;
-    case 1: //east
-      return [1, 0];
-      break;
-    case 2: //south
-      return [0, 1];
-      break;
-    case 3: //west
-      return [-1, 0];
-      break;
-  }
-}
-
 function outOfBounds(x,y) { //return if a given maze x or y is out of bounds
   return (x < 0 || y < 0 || x > mWidth || y > mHeight);
 }
@@ -64,7 +54,7 @@ class Cell {
     this.x = x_;
     this.y = y_;
     this.walls = walls_;
-    this.directions = shuffle([0, 1, 2, 3]);
+    this.directions = shuffle([dirOffset.N, dirOffset.E, dirOffset.S, dirOffset.W]);
     this.firstDraw = true;
   }
   show() { //draw the cell
@@ -97,8 +87,8 @@ class Cell {
   pruneDirections() {
     for (let i = this.directions.length - 1 ; i >= 0; i--) {
       console.log(this.directions[i], i);
-      let checkX = this.x + getOffset(this.directions[i])[0];
-      let checkY = this.y + getOffset(this.directions[i])[1];
+      let checkX = this.x + this.directions[i].x;
+      let checkY = this.y + this.directions[i].y;
       console.log(checkX,checkY,findCell(checkX,checkY));
       if (findCell(checkX,checkY) != null || outOfBounds(checkX,checkY)) {
         this.directions.splice(i,1);
