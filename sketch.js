@@ -29,8 +29,8 @@ let dir = {
 
 function setup() {
   createCanvas(400, 400);
-  mWidth = width / cellSize;
-  mHeight = height / cellSize;
+  mWidth = width / cellSize - 1;
+  mHeight = height / cellSize - 1;
   background(220);
   frameRate(1);
   cells.push(new Cell(mX, mY));
@@ -38,16 +38,29 @@ function setup() {
 }
 
 function draw() {
+
+  cells[cells.length - 1].pruneDirections(); //remove impossible movment locations
+  if (cells[cells.length - 1].directions == 0) {
+    i = cells.length - 1;
+    while (cells[i].directions == 0) {
+      i--;
+      cells[i].pruneDirections();
+    }
+    direction = cells[i].directions.shift()
+    mX = cells[i].x;
+    mY = cells[i].y;
+  } else {
+    direction = cells[cells.length - 1].directions.shift();
+  }
   let pmX = mX;
   let pmY = mY;
-  direction = cells[cells.length - 1].directions.shift();
-  mX += direction.x;
+  mX += direction.x; //set mX & mY to the new cell location
   mY += direction.y;
-  cells.push(new Cell(mX, mY));
-  cells[cells.length - 1].walls[(direction.id + 6) % 4] = false;
-  cells[cells.length - 1].pruneDirections();
-  previousCell = findCell(pmX,pmY);
-  cells[previousCell].walls[(direction.id)] = false;
+  cells.push(new Cell(mX, mY)); //create the new cell
+  cells[cells.length - 1].walls[(direction.id + 6) % 4] = false; //remove unwanted wall
+  console.log(pmX, pmY)
+  previousCell = findCell(pmX, pmY);
+  cells[previousCell].walls[(direction.id)] = false; //remove unwanted wall on previous
   showAll();
 }
 
@@ -55,9 +68,11 @@ function showAll() {
   background(220);
   for (let i = 0; i < cells.length; i++) {
     cells[i].show();
-    textAlign(LEFT,TOP)
-    textSize(5)
-    text(str(i), cells[i].x * cellSize +1, cells[i].y * cellSize+1)
+    // textAlign(LEFT, TOP)
+    // textSize(5)
+    // noStroke()
+    // fill(0)
+    // text(str(i), cells[i].x * cellSize + 1, cells[i].y * cellSize + 1)
   }
 }
 
@@ -111,10 +126,8 @@ class Cell {
   }
   pruneDirections() { //remove any directions that a cell cannot go
     for (let i = this.directions.length - 1; i >= 0; i--) {
-      console.log(this.directions[i], i);
       let checkX = this.x + this.directions[i].x;
       let checkY = this.y + this.directions[i].y;
-      console.log(checkX, checkY, findCell(checkX, checkY));
       if (findCell(checkX, checkY) != null || outOfBounds(checkX, checkY)) {
         this.directions.splice(i, 1);
       }
