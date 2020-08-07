@@ -2,23 +2,28 @@ let cellSize = 10;
 let cells = [];
 let mX = 10;
 let mY = 10;
+let mWidth;
+let mHeight;
 
 function setup() {
   createCanvas(400, 400);
+  mWidth = width / cellSize;
+  mHeight = height / cellSize;
   background(220);
-  frameRate(1)
+  frameRate(1);
 }
 
 function draw() {
   cells.push(new Cell(mX, mY));
+  cells[cells.length - 1].pruneDirections();
   direction = cells[cells.length - 1].directions.shift();
-
   showAll();
-  mX += cardinalTranslate(direction)[0];
-  mY += cardinalTranslate(direction)[1];
+  mX += getOffset(direction)[0];
+  mY += getOffset(direction)[1];
 }
 
 function showAll() {
+  background(220);
   for (let i = 0; i < cells.length; i++) {
     cells[i].show();
   }
@@ -33,7 +38,7 @@ function findCell(x, y) {
   return null;
 }
 
-function cardinalTranslate(direction) {
+function getOffset(direction) { //get x & y offsets for a given direction
   switch (direction) {
     case 0: //north
       return [0, -1];
@@ -47,10 +52,11 @@ function cardinalTranslate(direction) {
     case 3: //west
       return [-1, 0];
       break;
-    default:
-      return [0, 0];
-      break;
   }
+}
+
+function outOfBounds(x,y) { //return if a given maze x or y is out of bounds
+  return (x < 0 || y < 0 || x > mWidth || y > mHeight);
 }
 
 class Cell {
@@ -86,6 +92,17 @@ class Cell {
     }
     if (this.walls[3]) {
       line(this.cX, this.cY, this.cX, this.cY + cellSize);
+    }
+  }
+  pruneDirections() {
+    for (let i = this.directions.length - 1 ; i >= 0; i--) {
+      console.log(this.directions[i], i);
+      let checkX = this.x + getOffset(this.directions[i])[0];
+      let checkY = this.y + getOffset(this.directions[i])[1];
+      console.log(checkX,checkY,findCell(checkX,checkY));
+      if (findCell(checkX,checkY) != null || outOfBounds(checkX,checkY)) {
+        this.directions.splice(i,1);
+      }
     }
   }
 }
