@@ -1,4 +1,4 @@
-let cellSize = 10;
+let cellSize = 20;
 let cells = [];
 let mX = 0;
 let mY = 0;
@@ -28,7 +28,7 @@ let dir = {
 }
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(windowWidth - windowWidth % cellSize, windowHeight - windowHeight % cellSize);
   mWidth = width / cellSize;
   mHeight = height / cellSize;
   background(220);
@@ -39,11 +39,13 @@ function setup() {
 
 function draw() {
   if (cells.length < mWidth * mHeight) {
-    cells[cells.length - 1].pruneDirections(); //remove impossible movment locations
-    let backtrackIndex = cells.length - 1;
-    while (cells[backtrackIndex].directions == 0) {
-      backtrackIndex--;
-      cells[backtrackIndex].pruneDirections();
+    let backtrackIndex = null;
+    while (backtrackIndex == null) {
+      if (random() < 0.05) { // randomly start backtracking to create more random paths
+        backtrackIndex = backtrack(floor(random(1, cells.length - 1)));
+      } else {
+        backtrackIndex = backtrack(cells.length - 1);
+      }
     }
     direction = cells[backtrackIndex].directions.shift() //get cell's prefered direction
     mX = cells[backtrackIndex].x;
@@ -66,11 +68,24 @@ function showAll() {
   for (let i = 0; i < cells.length; i++) {
     cells[i].show();
     // textAlign(LEFT, TOP)
-    // textSize(5)
+    // textSize(4)
     // noStroke()
     // fill(0)
     // text(str(i), cells[i].x * cellSize + 1, cells[i].y * cellSize + 1)
   }
+}
+
+function backtrack(start) {
+  let i = start;
+  cells[i].pruneDirections(); //remove impossible movment locations
+  while (cells[i].directions == 0) {
+    i--;
+    if (i == 0 && cells[i].directions != 0) {
+      return null;
+    }
+    cells[i].pruneDirections();
+  }
+  return i;
 }
 
 function findCell(x, y) {
@@ -83,7 +98,7 @@ function findCell(x, y) {
 }
 
 function outOfBounds(x, y) { //return if a given maze x or y is out of bounds
-  return (x < 0 || y < 0 || x > mWidth-1 || y > mHeight-1);
+  return (x < 0 || y < 0 || x > mWidth - 1 || y > mHeight - 1);
 }
 
 class Cell {
@@ -106,7 +121,7 @@ class Cell {
     }
     rect(this.cX, this.cY, cellSize, cellSize);
     stroke(0);
-    strokeWeight(1);
+    strokeWeight(2);
     strokeCap(PROJECT);
     if (this.walls[0]) {
       line(this.cX, this.cY, this.cX + cellSize, this.cY);
