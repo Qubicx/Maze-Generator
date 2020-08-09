@@ -1,7 +1,7 @@
 let cellSize = 10;
 let cells = [];
-let mX = 10;
-let mY = 10;
+let mX = 0;
+let mY = 0;
 let mWidth;
 let mHeight;
 let dir = {
@@ -29,38 +29,35 @@ let dir = {
 
 function setup() {
   createCanvas(400, 400);
-  mWidth = width / cellSize - 1;
-  mHeight = height / cellSize - 1;
+  mWidth = width / cellSize;
+  mHeight = height / cellSize;
   background(220);
-  frameRate(1);
+  //frameRate(1);
   cells.push(new Cell(mX, mY));
   showAll();
 }
 
 function draw() {
-
-  cells[cells.length - 1].pruneDirections(); //remove impossible movment locations
-  if (cells[cells.length - 1].directions == 0) {
-    i = cells.length - 1;
-    while (cells[i].directions == 0) {
-      i--;
-      cells[i].pruneDirections();
+  if (cells.length < mWidth * mHeight) {
+    cells[cells.length - 1].pruneDirections(); //remove impossible movment locations
+    let backtrackIndex = cells.length - 1;
+    while (cells[backtrackIndex].directions == 0) {
+      backtrackIndex--;
+      cells[backtrackIndex].pruneDirections();
     }
-    direction = cells[i].directions.shift()
-    mX = cells[i].x;
-    mY = cells[i].y;
-  } else {
-    direction = cells[cells.length - 1].directions.shift();
+    direction = cells[backtrackIndex].directions.shift() //get cell's prefered direction
+    mX = cells[backtrackIndex].x;
+    mY = cells[backtrackIndex].y;
+    let pmX = mX;
+    let pmY = mY;
+    mX += direction.x; //set mX & mY to the new cell location
+    mY += direction.y;
+    cells.push(new Cell(mX, mY)); //create the new cell
+    cells[cells.length - 1].walls[(direction.id + 6) % 4] = false; //remove unwanted wall
+    previousCell = findCell(pmX, pmY);
+    cells[previousCell].walls[(direction.id)] = false; //remove unwanted wall on previous
   }
-  let pmX = mX;
-  let pmY = mY;
-  mX += direction.x; //set mX & mY to the new cell location
-  mY += direction.y;
-  cells.push(new Cell(mX, mY)); //create the new cell
-  cells[cells.length - 1].walls[(direction.id + 6) % 4] = false; //remove unwanted wall
-  console.log(pmX, pmY)
-  previousCell = findCell(pmX, pmY);
-  cells[previousCell].walls[(direction.id)] = false; //remove unwanted wall on previous
+  //frameRate(map(mouseX,0,width,1,60));
   showAll();
 }
 
@@ -86,7 +83,7 @@ function findCell(x, y) {
 }
 
 function outOfBounds(x, y) { //return if a given maze x or y is out of bounds
-  return (x < 0 || y < 0 || x > mWidth || y > mHeight);
+  return (x < 0 || y < 0 || x > mWidth-1 || y > mHeight-1);
 }
 
 class Cell {
