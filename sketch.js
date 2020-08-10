@@ -1,5 +1,7 @@
 let cellSize = 20;
 let cells = [];
+let trace = [];
+let done = false;
 let mX = 0;
 let mY = 0;
 let mWidth;
@@ -25,14 +27,13 @@ let dir = {
     x: -1,
     y: 0
   }
-}
+};
 
 function setup() {
   createCanvas(windowWidth - windowWidth % cellSize, windowHeight - windowHeight % cellSize);
   mWidth = width / cellSize;
   mHeight = height / cellSize;
   background(220);
-  //frameRate(1);
   cells.push(new Cell(mX, mY));
   showAll();
 }
@@ -50,17 +51,34 @@ function draw() {
     direction = cells[backtrackIndex].directions.shift() //get cell's prefered direction
     mX = cells[backtrackIndex].x;
     mY = cells[backtrackIndex].y;
-    let pmX = mX;
-    let pmY = mY;
+    previousCell = findCell(mX, mY);
     mX += direction.x; //set mX & mY to the new cell location
     mY += direction.y;
     cells.push(new Cell(mX, mY)); //create the new cell
     cells[cells.length - 1].walls[(direction.id + 6) % 4] = false; //remove unwanted wall
-    previousCell = findCell(pmX, pmY);
+    cells[cells.length - 1].previous = previousCell;
     cells[previousCell].walls[(direction.id)] = false; //remove unwanted wall on previous
+    showAll();
+  } else {
+    showAll();
+    noLoop();
+    backtrace(findCell(mWidth - 1, mHeight - 1));
+    done = true;
   }
-  //frameRate(map(mouseX,0,width,1,60));
-  showAll();
+}
+
+function mouseClicked() {
+  if (done) {
+    stroke(255, 0, 0);
+    strokeWeight(3);
+    noFill();
+    beginShape();
+    for (let i = 0; i < trace.length; i++) {
+      let cell = cells[trace[i]];
+      vertex(cell.cX + cellSize / 2, cell.cY + cellSize / 2);
+    }
+    endShape();
+  }
 }
 
 function showAll() {
@@ -68,7 +86,7 @@ function showAll() {
   for (let i = 0; i < cells.length; i++) {
     cells[i].show();
     // textAlign(LEFT, TOP)
-    // textSize(4)
+    // textSize(6)
     // noStroke()
     // fill(0)
     // text(str(i), cells[i].x * cellSize + 1, cells[i].y * cellSize + 1)
@@ -86,6 +104,14 @@ function backtrack(start) {
     cells[i].pruneDirections();
   }
   return i;
+}
+
+function backtrace(start) {
+  trace = [];
+  trace.unshift(start);
+  while (trace[0] != 0) {
+    trace.unshift(cells[trace[0]].previous);
+  }
 }
 
 function findCell(x, y) {
