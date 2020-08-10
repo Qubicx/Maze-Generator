@@ -133,18 +133,18 @@ class Cell {
     this.y = y_;
     this.walls = walls_;
     this.directions = shuffle([dir.N, dir.E, dir.S, dir.W]);
-    this.firstDraw = true;
+    // this.firstDraw = true;
   }
   show() { //draw the cell
     this.cX = this.x * cellSize;
     this.cY = this.y * cellSize;
     noStroke();
-    if (this.firstDraw) {
-      fill(128, 128, 255);
-      this.firstDraw = false;
-    } else {
+    // if (this.firstDraw) {
+    //   fill(128, 128, 255);
+    //   this.firstDraw = false;
+    // } else {
       fill(255);
-    }
+    // }
     rect(this.cX, this.cY, cellSize, cellSize);
     stroke(0);
     strokeWeight(2);
